@@ -1,2 +1,4 @@
 rootProject.name = 'http3-proto-java'
 
+include 'http3-proto'
+
