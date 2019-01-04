@@ -6,6 +6,7 @@ buildscript {
 
     dependencies {
         classpath 'com.palantir.baseline:gradle-baseline-java:0.43.0'
+        classpath 'gradle.plugin.org.inferred:gradle-processors:2.1.0'
     }
 }
 
@@ -15,26 +16,29 @@ plugins {
     id 'com.palantir.git-version' version '0.11.0'
 }
 
-repositories {
-    maven { url  "http://palantir.bintray.com/releases" }
-}
-
 group 'org.http3'
 version '0.1.0'
 
 apply plugin: 'com.palantir.baseline'
+apply plugin: 'org.inferred.processors'
 apply plugin: 'com.palantir.git-version'
-
-repositories {
-    mavenCentral()
-}
 
 allprojects {
     version gitVersion()
     group 'org.http3'
+
+    repositories {
+        mavenCentral()
+        maven { url  "http://palantir.bintray.com/releases" }
+    }
+
+    dependencyRecommendations {
+        mavenBom module: 'org.junit:junit-bom'
+    }
 }
 
 subprojects {
+
     apply plugin: 'java-library'
 
     sourceCompatibility = 1.8
