@@ -47,3 +47,7 @@ subprojects {
         options.compilerArgs += ['-Werror']
     }
 }
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '5.1'
+}
