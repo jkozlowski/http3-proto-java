@@ -14,11 +14,11 @@ jobs:
           keys:
             - v1-dependencies-{{ checksum "versions.props" }}
             - v1-dependencies-
-      - run: ./gradlew dependencies
+      - run: gradle dependencies
 
       - save_cache:
           paths:
             - ~/.gradle
           key: v1-dependencies-{{ checksum "versions.props" }}
 
-      - run: ./gradlew check
+      - run: gradle check
