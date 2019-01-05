@@ -1,6 +1,5 @@
 package org.http3;
 
-import com.google.common.base.Preconditions;
 import java.nio.ByteBuffer;
 
 /**
@@ -18,8 +17,10 @@ public final class VariableLengthEncoding {
     }
 
     public static void encode(long value, ByteBuffer buf) {
-        Preconditions.checkArgument(value >= 0, "Only positive values are allowed: %s", value);
-        long usedBits = 64 - Long.numberOfLeadingZeros(value);
+        if (value < 0) {
+            throw new IllegalArgumentException("Only positive values are allowed: " + value);
+        }
+        long usedBits = 64L - Long.numberOfLeadingZeros(value);
         if (usedBits < 7) { // len 1 = 00 = 0
             buf.put(getByte(value, 0));
         } else if (usedBits < 15) {
@@ -67,13 +68,18 @@ public final class VariableLengthEncoding {
                         | getShifted(buf, 2)
                         | getShifted(buf, 1)
                         | get(buf);
-            default:
-                throw new IllegalStateException("Unknown length: " + len);
         }
+        throw new IllegalStateException("Unknown length: " + len);
     }
 
     private static long toFirstByte(byte firstByte) {
         return unsignedByte(firstByte) & FIRST_BYTE_MASK;
+    }
+
+    private static byte toFirstByte(long value, int pos) {
+        byte firstByteValue = mask(value, FIRST_BYTE_MASK, pos);
+        int len = 32 - Integer.numberOfLeadingZeros(pos);
+        return (byte) ((len << LEN_SHIFT) | firstByteValue);
     }
 
     private static int unsignedByte(byte byteValue) {
@@ -93,13 +99,7 @@ public final class VariableLengthEncoding {
     }
 
     private static byte mask(long value, int mask, int pos) {
-        return (byte) ((value & shiftLeftBytes(mask, pos)) >>> pos * 8);
-    }
-
-    private static byte toFirstByte(long value, int pos) {
-        byte firstByteValue = mask(value, FIRST_BYTE_MASK, pos);
-        int len = 32 - Integer.numberOfLeadingZeros(pos);
-        return (byte) ((len << LEN_SHIFT) | firstByteValue);
+        return (byte) ((value & shiftLeftBytes(mask, pos)) >>> (pos * 8));
     }
 
     private static byte getByte(long value, int num) {
